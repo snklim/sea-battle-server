@@ -37,7 +37,7 @@ namespace SeaBattleServer
     public class Game
     {
         int nextPlayer = 1;
-        int status = -1;
+        public int status = -1;
         List<Player> players = new List<Player>();
         Random rnd = new Random();
         public string name { get; set; }

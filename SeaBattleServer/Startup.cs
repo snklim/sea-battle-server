@@ -65,20 +65,33 @@ namespace SeaBattleServer
 
             public async Task Start(string name)
             {
-                if (_games.ContainsKey(name))
+                if (_games.ContainsKey(name) && _games[name].Item1.Count == 2 && _games[name].Item2.status >= 0)
                 {
-                    _games[name].Item1.Add(Context.ConnectionId, 1);
+                    _games[name].Item2.start();
+
+                    foreach(var kv in _games[name].Item1)
+                    {
+                        await Clients.Client(kv.Key).Started(_games[name].Item2.getData(kv.Value));
+                    }
                 }
                 else
                 {
-                    var game = new Game() { name = name };
-                    game.start();
-                    _games[name] = Tuple.Create(new Dictionary<string, int>() { { Context.ConnectionId, 0 } }, game);
+                    if (_games.ContainsKey(name))
+                    {
+                        var player = _games[name].Item1.Any(x => x.Value == 0) ? 1 : 0;
+                        _games[name].Item1.Add(Context.ConnectionId, player);
+                    }
+                    else
+                    {
+                        var game = new Game() { name = name };
+                        game.start();
+                        _games[name] = Tuple.Create(new Dictionary<string, int>() { { Context.ConnectionId, 0 } }, game);
+                    }
+
+                    var ctx = _games[name];
+
+                    await Clients.Caller.Started(ctx.Item2.getData(ctx.Item1[Context.ConnectionId]));
                 }
-
-                var ctx = _games[name];
-
-                await Clients.Caller.Started(ctx.Item2.getData(ctx.Item1[Context.ConnectionId]));
             }
 
             public async Task Move(Shot shot)
@@ -98,6 +111,18 @@ namespace SeaBattleServer
                 {
 
                 }
+            }
+
+            public override Task OnDisconnectedAsync(Exception exception)
+            {
+                if (_games.Any(x => x.Value.Item1.ContainsKey(Context.ConnectionId)))
+                {
+                    var ctx = _games.First(x => x.Value.Item1.ContainsKey(Context.ConnectionId));
+
+                    ctx.Value.Item1.Remove(Context.ConnectionId);
+                }
+
+                return base.OnDisconnectedAsync(exception);
             }
         }
 
