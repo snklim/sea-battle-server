@@ -8,7 +8,7 @@ namespace SeaBattleServer
         {
             Task ReceiveMessage(ChatMessage message);
             Task Started(InitData message);
-            Task Moved(Changes message);
+            Task Moved(Changes message, int fieldIndex);
         }
     }
 }

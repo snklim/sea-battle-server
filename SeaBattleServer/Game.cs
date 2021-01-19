@@ -22,7 +22,6 @@ namespace SeaBattleServer
         public List<Cell> cells { get; set; } = new List<Cell>();
         public int nextPlayer { get; set; }
         public Cell nextMove { get; set; }
-        public int fieldIndex { get; set; }
         public int status { get; set; }
     }
 
@@ -98,18 +97,12 @@ namespace SeaBattleServer
             if (this.status == -1 && changes.nextPlayer == shot.player && player.availableMoves.Any(item => item.x == shot.x && item.y == shot.y))
             {
                 changes.valid = true;
-                changes.nextPlayer = player.shotFn(shot.x, shot.y, changes.cells) ? shot.player : (shot.player + 1) % 2;
-                player.updateNextMovesFn(shot.x, shot.y);
-                player.drawBorderFn(changes.cells);
-                player.updateAvailableMovesFn();
-                player.generateNextMovesFn(shot.x, shot.y);
-                changes.nextMove = player.generateNextMoveFn();
-                this.nextPlayer = changes.nextPlayer;
 
-                if (player.getAvailableShips() == 0)
-                    this.status = shot.player;
+                var ret = player.Move(shot.x, shot.y, changes.cells);
 
-                changes.status = this.status;
+                changes.nextPlayer = this.nextPlayer = ret.player ? shot.player : (shot.player + 1) % 2;
+                changes.nextMove = ret.move;
+                changes.status = this.status = ret.status ? shot.player : this.status;
             }
 
             return changes;

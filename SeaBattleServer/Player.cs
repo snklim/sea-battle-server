@@ -33,7 +33,7 @@ namespace SeaBattleServer
 
         Random rnd = new Random();
 
-        public void placeShip(int length)
+        private void placeShip(int length)
         {
 
             var max = 10;
@@ -129,7 +129,7 @@ namespace SeaBattleServer
             }
         }
 
-        public void genBotMoves(List<Cell> moves)
+        private void genBotMoves(List<Cell> moves)
         {
             for (var i = 0; i < 10; i++)
             {
@@ -140,7 +140,22 @@ namespace SeaBattleServer
             }
         }
 
-        public bool shotFn(int x, int y, List<Cell> cells)
+        public (bool player, Cell move, bool status) Move(int x, int y, List<Cell> cells)
+        {
+            var nextPlayer = shotFn(x, y, cells) ;
+
+            updateNextMovesFn(x, y);
+            drawBorderFn(cells);
+            updateAvailableMovesFn();
+            generateNextMovesFn(x, y);
+
+            var nextMove = generateNextMoveFn();
+            var status = getAvailableShips() == 0;
+
+            return (nextPlayer, nextMove, status);
+        }
+
+        private bool shotFn(int x, int y, List<Cell> cells)
         {
             var cell = this.field[x][y];
 
@@ -161,7 +176,7 @@ namespace SeaBattleServer
             return cell.type == 'K';
         }
 
-        public void updateAvailableMovesFn()
+        private void updateAvailableMovesFn()
         {
 
             this.availableMoves = new List<Cell>();
@@ -178,7 +193,7 @@ namespace SeaBattleServer
             }
         }
 
-        public void drawBorderFn(List<Cell> cells)
+        private void drawBorderFn(List<Cell> cells)
         {
             var clearPrevSuccessfullMoves = false;
 
@@ -204,7 +219,7 @@ namespace SeaBattleServer
             }
         }
 
-        public void generateNextMovesFn(int x, int y)
+        private void generateNextMovesFn(int x, int y)
         {
 
             if (this.field[x][y].type == 'K')
@@ -284,14 +299,14 @@ namespace SeaBattleServer
             return move;
         }
 
-        public void updateNextMovesFn(int x, int y)
+        private void updateNextMovesFn(int x, int y)
         {
             var nextPossibleMoveIndex = this.nextPossibleMoves.FindIndex(item => item.x == x && item.y == y);
             if (nextPossibleMoveIndex >= 0)
                 this.nextPossibleMoves.RemoveAt(nextPossibleMoveIndex);
         }
 
-        public int getAvailableShips()
+        private int getAvailableShips()
         {
             var numOfShips = 0;
             for (var i = 0; i < this.ships.Count; i++)

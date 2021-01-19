@@ -84,20 +84,12 @@ namespace SeaBattleServer
 
             public async Task Move(Shot shot)
             {
-                try
-                {
-                    var ctx = _games[shot.name];
-                    var changes = ctx.Game.move(shot);
+                var ctx = _games[shot.name];
+                var changes = ctx.Game.move(shot);
 
-                    foreach (var player in ctx.Players.Values)
-                    {
-                        changes.fieldIndex = player.PlayerIndex == shot.player ? 1 : 0;
-                        await Clients.Client(player.ConnectionId).Moved(changes);
-                    }
-                }
-                catch (Exception ex)
+                foreach (var player in ctx.Players.Values)
                 {
-
+                    await Clients.Client(player.ConnectionId).Moved(changes, player.PlayerIndex == shot.player ? 1 : 0);
                 }
             }
 
