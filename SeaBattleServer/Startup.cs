@@ -20,7 +20,7 @@ namespace SeaBattleServer
                 {
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins("https://localhost:3000")
+                        .WithOrigins("https://192.168.88.23:3000")
                         .AllowCredentials();
                 });
             });
