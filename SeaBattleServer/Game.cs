@@ -5,39 +5,11 @@ using System.Threading.Tasks;
 
 namespace SeaBattleServer
 {
-    public class InitData
-    {
-        public string name { get; set; }
-        public int player { get; set; }
-        public int nextPlayer { get; set; }
-        public Cell[] nextMove { get; set; }
-        public List<List<Cell>>[] fields { get; set; }
-    }
-
-    public class Changes
-    {
-        public bool valid { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
-        public List<Cell> cells { get; set; } = new List<Cell>();
-        public int nextPlayer { get; set; }
-        public Cell nextMove { get; set; }
-        public int status { get; set; }
-    }
-
-    public class Shot
-    {
-        public string name { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
-        public int player { get; set; }
-    }
-
     public class Game
     {
-        int nextPlayer = 1;
+        public int nextPlayer = 1;
         public int status = -1;
-        List<Player> players = new List<Player>();
+        public List<Player> players = new List<Player>();
         Random rnd = new Random();
         public string name { get; set; }
 

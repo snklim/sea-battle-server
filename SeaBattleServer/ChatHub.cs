@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 
 namespace SeaBattleServer
 {
@@ -12,24 +10,24 @@ namespace SeaBattleServer
     {
         public class ChatHub : Hub<IChatClient>
         {
-            private static Dictionary<string, GameContext> _games = new Dictionary<string, GameContext>();
+            public static Dictionary<string, GameContext> _games = new Dictionary<string, GameContext>();
 
             public async Task SendMessage(ChatMessage message)
             {
                 await Clients.All.ReceiveMessage(message);
             }
 
-            public async Task Start(string name)
+            public async Task Start(StartGameRequest request)
             {
-                if (await PlayAgain(name))
+                if (await PlayAgain(request.name))
                 {
                     Console.WriteLine("Play again");
                 }
-                else if (await JoinExists(name))
+                else if (await JoinExists(request.name))
                 {
                     Console.WriteLine("Join exists");
                 }
-                else if (await StartNew(name))
+                else if (await StartNew(request.name, request.playWithBot))
                 {
                     Console.WriteLine("Start new");
                 }
@@ -37,7 +35,7 @@ namespace SeaBattleServer
 
             private async Task<bool> PlayAgain(string name)
             {
-                if (_games.TryGetValue(name, out var ctx) && ctx.Players.Count == 2 && ctx.Game.status >= 0)
+                if (_games.TryGetValue(name, out var ctx) && ctx.Game.status >= 0)
                 {
                     ctx.Game.start();
 
@@ -67,17 +65,19 @@ namespace SeaBattleServer
                 return false;
             }
 
-            private async Task<bool> StartNew(string name)
+            private async Task<bool> StartNew(string name, bool playWithBot)
             {
                 var game = new Game() { name = name };
                 var playerCtx = new PlayerContext { ConnectionId = Context.ConnectionId, PlayerIndex = 0 };
-                var ctx = new GameContext { Game = game, Name = name, };
+                var ctx = new GameContext { Game = game, Name = name, PlayWithBot = playWithBot };
                 ctx.Players.Add(Context.ConnectionId, playerCtx);
                 _games[name] = ctx;
 
                 game.start();
 
-                await Clients.Caller.Started(ctx.Game.getData(0));
+                var initData = ctx.Game.getData(0);
+
+                await Clients.Caller.Started(initData);
 
                 return true;
             }

@@ -8,6 +8,7 @@ namespace SeaBattleServer
         {
             public string Name { get; set; }
             public Game Game { get; set; }
+            public bool PlayWithBot { get; set; }
             public Dictionary<string, PlayerContext> Players { get; } = new Dictionary<string, PlayerContext>();
         }
     }
