@@ -142,7 +142,7 @@ namespace SeaBattleServer
             }
         }
 
-        public (bool player, Cell move, bool status, bool valid) Attack(int x, int y, List<Cell> cells)
+        public AttackResponse Attack(int x, int y, List<Cell> cells)
         {
             return PlayerStatus.Attack(x, y, cells);
         }

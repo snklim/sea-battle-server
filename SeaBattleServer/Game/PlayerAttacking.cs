@@ -12,16 +12,16 @@ namespace SeaBattleServer
             this.player = player;
         }
 
-        public override (bool player, Cell move, bool status, bool valid) Attack(int x, int y, List<Cell> cells)
+        public override AttackResponse Attack(int x, int y, List<Cell> cells)
         {
             if (!player.availableMoves.Any(item => item.x == x && item.y == y))
             {
-                return (false, null, false, false);
+                return new AttackResponse { player = false, move = null, status = false, valid = false };
             }
 
             var ret = player.AttackInternal(x, y, cells);
 
-            return (ret.player, ret.move, ret.status, true);
+            return new AttackResponse { player = ret.player, move = ret.move, status = ret.status, valid = true };
         }
 
         public override void SwitchStatus()

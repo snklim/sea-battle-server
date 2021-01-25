@@ -11,14 +11,22 @@ namespace SeaBattleServer
             this.player = player;
         }
 
-        public override (bool player, Cell move, bool status, bool valid) Attack(int x, int y, List<Cell> cells)
+        public override AttackResponse Attack(int x, int y, List<Cell> cells)
         {
-            return (false, null, false, false);
+            return new AttackResponse { player = false, move = null, status = false, valid = false };
         }
 
         public override void SwitchStatus()
         {
             player.PlayerStatus = new PlayerAttacking(player);
         }
+    }
+
+    public class AttackResponse
+    {
+        public bool player { get; set; }
+        public Cell move { get; set; }
+        public bool status { get; set; }
+        public bool valid { get; set; }
     }
 }

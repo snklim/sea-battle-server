@@ -70,40 +70,5 @@ namespace SeaBattleServer
         {
             return GameStatus.Move(shot);
         }
-
-        public Changes moveInternal(Shot shot)
-        {
-            var changes = new Changes
-            {
-                valid = false,
-                x = shot.x,
-                y = shot.y,
-                cells = new List<Cell>(),
-                nextPlayer = this.nextPlayer,
-                nextMove = null,
-                status = this.status
-            };
-
-            var player = this.players[(shot.player + 1) % 2];
-
-            (bool player, Cell move, bool status, bool valid) ret = (false, null, false, false);
-
-            if ((ret = player.Attack(shot.x, shot.y, changes.cells)).valid)
-            {
-                changes.valid = true;
-
-                changes.nextPlayer = this.nextPlayer = ret.player ? shot.player : (shot.player + 1) % 2;
-
-                if (!ret.player)
-                {
-                    players.ForEach(pl => pl.PlayerStatus.SwitchStatus());
-                }
-
-                changes.nextMove = ret.move;
-                changes.status = this.status = ret.status ? shot.player : this.status;
-            }
-
-            return changes;
-        }
     }
 }
