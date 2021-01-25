@@ -61,7 +61,7 @@ namespace SeaBattleServer
                 fields = new[]
                 {
                     playerOne.field,
-                    playerTwo.field.Select(row => row.Select(cell => new Cell{index = cell.index, type = ' ', x = cell.x, y = cell.y}).ToList()).ToList()
+                    playerTwo.field.Select(row => row.Select(cell => new Cell{index = cell.index, type = CellType.Empty, x = cell.x, y = cell.y}).ToList()).ToList()
                 }
             };
         }

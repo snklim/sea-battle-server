@@ -4,23 +4,6 @@ using System.Linq;
 
 namespace SeaBattleServer
 {
-    public class Cell
-    {
-        public int x { get; set; }
-        public int y { get; set; }
-        public char type { get; set; }
-        public int index { get; set; }
-    }
-
-    public class Ship
-    {
-        public int index { get; set; }
-        public List<Cell> ship { get; set; }
-        public List<Cell> border { get; set; }
-        public int length { get; set; }
-        public bool processed { get; set; }
-    }
-
     public class Player
     {
         public List<Cell> availableMoves = new List<Cell>();
@@ -63,7 +46,7 @@ namespace SeaBattleServer
                                     border.Add(new Cell { x = x + i, y = y + k });
 
                     for (var i = 0; i < length; i++)
-                        ship.Add(new Cell { x = x + i, y = y, type = 'O' });
+                        ship.Add(new Cell { x = x + i, y = y, type = CellType.Deck });
                 }
                 else
                 {
@@ -79,7 +62,7 @@ namespace SeaBattleServer
                                     border.Add(new Cell { x = x + k, y = y + i });
 
                     for (var i = 0; i < length; i++)
-                        ship.Add(new Cell { x = x, y = y + i, type = 'O' });
+                        ship.Add(new Cell { x = x, y = y + i, type = CellType.Deck });
                 }
 
                 var canPlace = true;
@@ -87,7 +70,7 @@ namespace SeaBattleServer
                 for (var i = 0; i < ship.Count; i++)
                 {
                     var cell = ship[i];
-                    if (this.field[cell.x][cell.y].type == 'O')
+                    if (this.field[cell.x][cell.y].type == CellType.Deck)
                     {
                         canPlace = false;
                         break;
@@ -97,7 +80,7 @@ namespace SeaBattleServer
                 for (var i = 0; i < border.Count; i++)
                 {
                     var cell = border[i];
-                    if (this.field[cell.x][cell.y].type == 'O')
+                    if (this.field[cell.x][cell.y].type == CellType.Deck)
                     {
                         canPlace = false;
                         break;
@@ -109,13 +92,13 @@ namespace SeaBattleServer
                     for (var i = 0; i < border.Count; i++)
                     {
                         var cell = border[i];
-                        this.field[cell.x][cell.y] = new Cell { type = ' ', x = cell.x, y = cell.y };
+                        this.field[cell.x][cell.y] = new Cell { type = CellType.Empty, x = cell.x, y = cell.y };
                     }
 
                     for (var i = 0; i < ship.Count; i++)
                     {
                         var cell = ship[i];
-                        this.field[cell.x][cell.y] = new Cell { type = 'O', x = cell.x, y = cell.y, index = this.ships.Count };
+                        this.field[cell.x][cell.y] = new Cell { type = CellType.Deck, x = cell.x, y = cell.y, index = this.ships.Count };
                     }
 
                     this.ships.Add(new Ship
@@ -147,7 +130,7 @@ namespace SeaBattleServer
             return PlayerStatus.Attack(x, y, cells);
         }
 
-        public (bool player, Cell move, bool status) AttackInternal(int x, int y, List<Cell> cells)
+        public AttackResponse AttackInternal(int x, int y, List<Cell> cells)
         {
             var nextPlayer = shotFn(x, y, cells);
 
@@ -159,28 +142,28 @@ namespace SeaBattleServer
             var nextMove = generateNextMoveFn();
             var status = getAvailableShips() == 0;
 
-            return (nextPlayer, nextMove, status);
+            return new AttackResponse { player = nextPlayer, move = nextMove, status = status };
         }
 
         private bool shotFn(int x, int y, List<Cell> cells)
         {
             var cell = this.field[x][y];
 
-            var shipIndex = cell.type == 'O' ? cell.index : -1;
+            var shipIndex = cell.type == CellType.Deck ? cell.index : -1;
 
-            if (cell.type == 'O')
+            if (cell.type == CellType.Deck)
             {
                 var shipLength = this.ships[shipIndex].length - 1;
 
                 this.ships[shipIndex].length = shipLength;
-                this.ships[shipIndex].ship[shipLength].type = 'K';
+                this.ships[shipIndex].ship[shipLength].type = CellType.Killed;
             }
 
-            cell.type = cell.type == 'O' ? 'K' : 'X';
+            cell.type = cell.type == CellType.Deck ? CellType.Killed : CellType.Missed;
 
             cells.Add(cell);
 
-            return cell.type == 'K';
+            return cell.type == CellType.Killed;
         }
 
         private void updateAvailableMovesFn()
@@ -192,7 +175,7 @@ namespace SeaBattleServer
             {
                 for (var j = 0; j < this.field[i].Count; j++)
                 {
-                    if (this.field[i][j].type == ' ' || this.field[i][j].type == 'O')
+                    if (this.field[i][j].type == CellType.Empty || this.field[i][j].type == CellType.Deck)
                     {
                         this.availableMoves.Add(new Cell { x = i, y = j });
                     }
@@ -212,8 +195,8 @@ namespace SeaBattleServer
                     for (var j = 0; j < ship.border.Count; j++)
                     {
                         var cell = ship.border[j];
-                        this.field[cell.x][cell.y].type = 'B';
-                        cells.Add(new Cell { x = cell.x, y = cell.y, type = 'B' });
+                        this.field[cell.x][cell.y].type = CellType.Border;
+                        cells.Add(new Cell { x = cell.x, y = cell.y, type = CellType.Border });
                         clearPrevSuccessfullMoves = true;
                         ship.processed = true;
                     }
@@ -229,7 +212,7 @@ namespace SeaBattleServer
         private void generateNextMovesFn(int x, int y)
         {
 
-            if (this.field[x][y].type == 'K')
+            if (this.field[x][y].type == CellType.Killed)
             {
 
                 this.nextPossibleMoves.Add(new Cell { x = x - 1, y = y });
@@ -340,7 +323,7 @@ namespace SeaBattleServer
                 this.field.Add(new List<Cell>());
                 for (var j = 0; j < 10; j++)
                 {
-                    this.field[i].Add(new Cell { type = ' ', x = i, y = j });
+                    this.field[i].Add(new Cell { type = CellType.Empty, x = i, y = j });
                 }
             }
 
