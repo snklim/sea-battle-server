@@ -13,6 +13,8 @@ namespace SeaBattleServer
         Random rnd = new Random();
         public string name { get; set; }
 
+        public GameStatus GameStatus { get; set; }
+
         public void start()
         {
             this.nextPlayer = (int)Math.Round((double)rnd.Next(2));
@@ -26,6 +28,19 @@ namespace SeaBattleServer
 
             this.players[0].init();
             this.players[1].init();
+
+            if (nextPlayer == 0)
+            {
+                this.players[1].PlayerStatus = new PlayerAttacking(this.players[1]);
+                this.players[0].PlayerStatus = new PlayerDefending(this.players[0]);
+            }
+            else
+            {
+                this.players[0].PlayerStatus = new PlayerAttacking(this.players[0]);
+                this.players[1].PlayerStatus = new PlayerDefending(this.players[1]);
+            }
+
+            GameStatus = new GamePlaying(this);
         }
 
         public InitData getData(int index)
@@ -46,12 +61,17 @@ namespace SeaBattleServer
                 fields = new[]
                 {
                     playerOne.field,
-                    playerTwo.field
+                    playerTwo.field.Select(row => row.Select(cell => new Cell{index = cell.index, type = ' ', x = cell.x, y = cell.y}).ToList()).ToList()
                 }
             };
         }
 
         public Changes move(Shot shot)
+        {
+            return GameStatus.Move(shot);
+        }
+
+        public Changes moveInternal(Shot shot)
         {
             var changes = new Changes
             {
@@ -66,13 +86,19 @@ namespace SeaBattleServer
 
             var player = this.players[(shot.player + 1) % 2];
 
-            if (this.status == -1 && changes.nextPlayer == shot.player && player.availableMoves.Any(item => item.x == shot.x && item.y == shot.y))
+            (bool player, Cell move, bool status, bool valid) ret = (false, null, false, false);
+
+            if ((ret = player.Attack(shot.x, shot.y, changes.cells)).valid)
             {
                 changes.valid = true;
 
-                var ret = player.Move(shot.x, shot.y, changes.cells);
-
                 changes.nextPlayer = this.nextPlayer = ret.player ? shot.player : (shot.player + 1) % 2;
+
+                if (!ret.player)
+                {
+                    players.ForEach(pl => pl.PlayerStatus.SwitchStatus());
+                }
+
                 changes.nextMove = ret.move;
                 changes.status = this.status = ret.status ? shot.player : this.status;
             }

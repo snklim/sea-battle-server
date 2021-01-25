@@ -28,6 +28,8 @@ namespace SeaBattleServer
                     {
                         var nextMove = kv.Value.Game.players[0].generateNextMoveFn();
 
+                        if (nextMove == null) continue;
+
                         var ctx = ChatHub._games[kv.Key];
                         var changes = ctx.Game.move(new Shot
                         {

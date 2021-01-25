@@ -29,6 +29,8 @@ namespace SeaBattleServer
         public List<List<Cell>> field = new List<List<Cell>>();
         public List<Ship> ships = new List<Ship>();
 
+        public PlayerStatus PlayerStatus { get; set; }
+
         int[] shipsTypes = new[] { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
 
         Random rnd = new Random();
@@ -140,9 +142,14 @@ namespace SeaBattleServer
             }
         }
 
-        public (bool player, Cell move, bool status) Move(int x, int y, List<Cell> cells)
+        public (bool player, Cell move, bool status, bool valid) Attack(int x, int y, List<Cell> cells)
         {
-            var nextPlayer = shotFn(x, y, cells) ;
+            return PlayerStatus.Attack(x, y, cells);
+        }
+
+        public (bool player, Cell move, bool status) AttackInternal(int x, int y, List<Cell> cells)
+        {
+            var nextPlayer = shotFn(x, y, cells);
 
             updateNextMovesFn(x, y);
             drawBorderFn(cells);
@@ -287,6 +294,8 @@ namespace SeaBattleServer
 
         public Cell generateNextMoveFn()
         {
+            if (!this.availableMoves.Any()) return null;
+
             var next = (int)rnd.Next(this.availableMoves.Count);
 
             var move = this.availableMoves[next];
