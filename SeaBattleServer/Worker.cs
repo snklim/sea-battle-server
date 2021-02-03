@@ -24,25 +24,27 @@ namespace SeaBattleServer
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(500));
 
-                    foreach (var kv in ChatHub._games.Where(x => x.Value.PlayWithBot && x.Value.Game.status == -1 && x.Value.Game.nextPlayer == 1))
+                    foreach (var ctx in ChatHub.games.Where(x => x.Value.playWithBot).Select(x => x.Value))
                     {
-                        var nextMove = kv.Value.Game.players[0].generateNextMoveFn();
+                        var affectedCells = ctx.game.Attack(new Game2.Commands.PlayerAutoMoveCommand(ctx.game.Player2));
 
-                        if (nextMove == null) continue;
-
-                        var ctx = ChatHub._games[kv.Key];
-                        var changes = ctx.Game.move(new Shot
+                        var changes = new Changes
                         {
-                            name = kv.Key,
-                            player = 1,
-                            x = nextMove.x,
-                            y = nextMove.y
-                        });
+                            status = -1,
+                            valid = affectedCells.Any(),
+                            nextMove = new Cell { },
+                            nextPlayer = affectedCells.Any(cell => cell.Type == Game2.CellType.Destroyed) ? 1 : 0,
+                            cells = affectedCells.Select(cell => new Cell
+                            {
+                                type = cell.Type == Game2.CellType.Destroyed ? CellType.Killed : CellType.Missed,
+                                x = cell.X,
+                                y = cell.Y
+                            }).ToList(),
+                            x = -1,
+                            y = -1
+                        };
 
-                        foreach (var player in ctx.Players.Values)
-                        {
-                            await _hub.Clients.Client(player.ConnectionId).Moved(changes, 0);
-                        }
+                        await _hub.Clients.Client(ctx.master).Moved(changes, 0);
                     }
                 }
             }
