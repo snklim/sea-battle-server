@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+
+  api:
+    ports:
+      - "8080:80"
+    image: ${REGISTRY:-sea-battle-game}/api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: API
+      dockerfile: Dockerfile
+
+  client:
+    ports: 
+      - "8081:80"
+    image: ${REGISTRY:-sea-battle-game}/client:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: client
+      dockerfile: Dockerfile
