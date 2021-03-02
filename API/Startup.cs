@@ -47,7 +47,7 @@ namespace SeaBattleServer
                     await context.Response.WriteAsync("Hello World!");
                 });
 
-                endpoints.MapHub<ChatHub>("/hubs/chat");
+                endpoints.MapHub<SeaBattleHub>("/hubs/chat");
             });
         }
     }

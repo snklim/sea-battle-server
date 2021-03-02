@@ -4,18 +4,9 @@ namespace SeaBattleServer.Game2.Commands
 {
     class PlayerManualMoveCommand : PlayerMoveCommand
     {
-        private readonly Player player;
-        private readonly Move move;
-
-        public PlayerManualMoveCommand(Player player, Move move)
+        public PlayerManualMoveCommand(Player player, Move move) : base(player)
         {
-            this.player = player;
-            this.move = move;
-        }
-
-        public override void Execute(List<Cell> affectedCells)
-        {
-            player.Attack(move, affectedCells);
+            Move = move;
         }
     }
 }

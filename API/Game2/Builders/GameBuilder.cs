@@ -4,7 +4,7 @@ namespace SeaBattleServer.Game2.Builders
 {
     static class GameBuilder
     {
-        static public Game BuildGame()
+        static public Game BuildGame(string name)
         {
             var player1 = PlayerBuilder.BuildPlayer();
             var player2 = PlayerBuilder.BuildPlayer();
@@ -14,6 +14,7 @@ namespace SeaBattleServer.Game2.Builders
 
             var game = new Game
             {
+                Name = name,
                 Player1 = player1,
                 Player2 = player2
             };

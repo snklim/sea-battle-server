@@ -6,6 +6,7 @@ namespace SeaBattleServer.Game2
 {
     class Game
     {
+        public string Name { get; set; }
         public Player Player1 { get; set; }
         public Player Player2 { get; set; }
         public GameState State { get; set; }

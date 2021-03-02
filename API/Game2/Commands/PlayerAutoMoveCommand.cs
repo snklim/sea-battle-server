@@ -4,16 +4,9 @@ namespace SeaBattleServer.Game2.Commands
 {
     class PlayerAutoMoveCommand : PlayerMoveCommand
     {
-        private readonly Player player;
-
-        public PlayerAutoMoveCommand(Player player)
+        public PlayerAutoMoveCommand(Player player) : base(player)
         {
-            this.player = player;
-        }
-
-        public override void Execute(List<Cell> affectedCells)
-        {
-            player.Attack(player.NextMove(), affectedCells);
+            Move = player.NextMove();
         }
     }
 }
